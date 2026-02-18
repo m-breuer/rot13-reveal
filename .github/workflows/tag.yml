@@ -4,59 +4,83 @@ on:
   workflow_run:
     workflows: [ "CI" ]
     types:
-    - completed
+      - completed
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
-  create-tag:
-    name: "Create Tag"
+  release:
+    name: Bump version, tag, and publish
     if: >
-      github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
-    runs-on: ubuntu-latest
-    outputs:
-      new_tag: ${{ steps.tag_version.outputs.new_tag }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Create tag
-      uses: mathieudutour/github-tag-action@v6.1
-      id: tag_version
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        default_bump: "patch"
-
-  publish:
-    name: "Publish to npm"
-    needs: create-tag
-    if: needs.create-tag.outputs.new_tag != ''
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      !contains(github.event.workflow_run.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: main
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: "24"
-        registry-url: "https://registry.npmjs.org"
-        cache: "npm"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Sync package version to new tag
-      run: npm version "${NEW_TAG#v}" --no-git-tag-version --allow-same-version
-      env:
-        NEW_TAG: ${{ needs.create-tag.outputs.new_tag }}
+      - name: Verify package
+        run: npm run lint && npm run test && npm run build
 
-    - name: Verify package
-      run: npm run lint && npm run test && npm run build
+      - name: Bump package version and create tag
+        id: version_bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          NEW_VERSION="$(npm version patch -m "chore(release): %s")"
+          echo "new_tag=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "new_version=${NEW_VERSION#v}" >> "$GITHUB_OUTPUT"
 
-    - name: Publish package
-      run: npm publish --provenance --access public
+      - name: Push release commit and tag
+        run: git push --follow-tags origin main
+
+      - name: Check if version already exists on npm
+        id: npm_check
+        run: |
+          PKG_NAME="$(node -p "require('./package.json').name")"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve npm dist-tag
+        id: dist_tag
+        if: steps.npm_check.outputs.exists != 'true'
+        run: |
+          PKG_NAME="$(node -p "require('./package.json').name")"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          LATEST="$(npm view "$PKG_NAME" version 2>/dev/null || true)"
+          if [ -z "$LATEST" ]; then
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          IS_LOWER="$(node -e 'const a=process.argv[1],b=process.argv[2];const pa=a.split(".").map(Number);const pb=b.split(".").map(Number);const n=Math.max(pa.length,pb.length);let cmp=0;for(let i=0;i<n;i++){const x=pa[i]||0;const y=pb[i]||0;if(x<y){cmp=-1;break;}if(x>y){cmp=1;break;}}process.stdout.write(cmp<0?"true":"false");' "$PKG_VERSION" "$LATEST")"
+          if [ "$IS_LOWER" = "true" ]; then
+            echo "tag=legacy" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish package
+        if: steps.npm_check.outputs.exists != 'true'
+        run: npm publish --provenance --access public --tag "${DIST_TAG}"
+        env:
+          DIST_TAG: ${{ steps.dist_tag.outputs.tag }}
