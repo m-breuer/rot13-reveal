@@ -4,6 +4,9 @@ Client-side ROT13 obfuscation and interaction-triggered reveal utility.
 
 ROT13 is not encryption. This library is intended to reduce trivial automated harvesting in static markup.
 
+NPM: [@m-breuer/rot13-reveal](https://www.npmjs.com/package/@m-breuer/rot13-reveal)  
+Repository: [m-breuer/rot13-reveal](https://github.com/m-breuer/rot13-reveal)
+
 ## Features
 
 - Zero production dependencies
@@ -21,6 +24,20 @@ ROT13 is not encryption. This library is intended to reduce trivial automated ha
 
 ```bash
 npm install @m-breuer/rot13-reveal
+```
+
+## Quick Start
+
+```html
+<div id="contact"></div>
+<script type="module">
+  import { mountRot13Reveal } from "@m-breuer/rot13-reveal";
+
+  mountRot13Reveal(document.getElementById("contact"), "hello@example.com", {
+    label: "Show contact",
+    mailtoAfterReveal: true
+  });
+</script>
 ```
 
 ## API
@@ -99,27 +116,32 @@ npm run build
 
 ## CI & Publishing
 
-CI checks:
+CI checks on pushes and pull requests:
 
 - install
 - lint
 - test
 - build
 
+Automatic publish on tag:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The GitHub workflow publishes the package to npm when a `v*` tag is pushed.
+
 Manual publish:
 
 ```bash
 npm login
-npm publish --access public
-```
-
-Version bump flow:
-
-```bash
-npm version patch # or minor / major
-git push --follow-tags
 npm publish
 ```
+
+Required repository secret:
+
+- `NPM_TOKEN`: npm automation token with publish rights
 
 ## License
 
