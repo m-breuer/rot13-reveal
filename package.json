@@ -1,0 +1,53 @@
+{
+  "name": "@m-breuer/rot13-reveal",
+  "version": "1.0.0",
+  "description": "Client-side ROT13 obfuscation and interaction-based reveal utility for imprint and GDPR pages.",
+  "homepage": "https://github.com/m-breuer/rot13-reveal#readme",
+  "bugs": {
+    "url": "https://github.com/m-breuer/rot13-reveal/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-breuer/rot13-reveal.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marcel Breuer",
+    "email": "breuer.marcel@outlook.com",
+    "url": "https://github.com/m-breuer"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "clean": "rimraf dist",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run clean && npm run lint && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.5.0"
+  }
+}
