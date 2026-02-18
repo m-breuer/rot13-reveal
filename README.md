@@ -1,17 +1,126 @@
-# @m-breuer/rot13-reveal 
+# @m-breuer/rot13-reveal
 
 Client-side ROT13 obfuscation and interaction-triggered reveal utility.
 
+ROT13 is not encryption. This library is intended to reduce trivial automated harvesting in static markup.
+
+## Features
+
+- Zero production dependencies
+- Deterministic `rot13` transform
+- Click-to-reveal UI mount helper
+- Optional UI hardening (`user-select` and context menu blocking)
+- Cleanup lifecycle (`destroy`) for SPA usage
+
+## Requirements
+
+- Node.js >= 24 (build/test tooling)
+- Browser DOM APIs at runtime
+
 ## Install
 
+```bash
 npm install @m-breuer/rot13-reveal
+```
+
+## API
+
+### `rot13(input: string): string`
+
+- Transforms letters `A-Z` and `a-z`
+- Preserves non-letter characters
+- Symmetric: `rot13(rot13(x)) === x`
+
+### `mountRot13Reveal(container, secretPlaintext, options?)`
+
+```ts
+mountRot13Reveal(
+  container: HTMLElement,
+  secretPlaintext: string,
+  options?: RevealOptions,
+): { destroy(): void };
+```
+
+Reveal flow:
+
+1. ROT13-encode plaintext.
+2. Render a button and output container.
+3. Store encoded value in `dataset`.
+4. Decode on click (optionally delayed).
+5. Disable button after reveal.
+6. Support cleanup through `destroy()`.
+
+### `RevealOptions`
+
+```ts
+type RevealOptions = {
+  label?: string;
+  revealDelayMs?: number;
+  mailtoAfterReveal?: boolean;
+  hardenUi?: boolean;
+  blockContextMenu?: boolean;
+};
+```
+
+Defaults:
+
+- `label`: `"Show contact"`
+- `revealDelayMs`: `250`
+- `mailtoAfterReveal`: `false`
+- `hardenUi`: `true`
+- `blockContextMenu`: `false`
 
 ## Usage
-```ts 
-import { mountRot13Reveal } from "@m-breuer/rot13-reveal"; 
 
-mountRot13Reveal(document.getElementById("contact")!, "your@email.com", { 
-    label: "Show email", 
-    mailtoAfterReveal: true 
+```ts
+import { mountRot13Reveal } from "@m-breuer/rot13-reveal";
+
+mountRot13Reveal(document.getElementById("contact")!, "you@example.com", {
+  label: "Show email",
+  mailtoAfterReveal: true,
 });
 ```
+
+## Build Output
+
+`dist/`
+
+- `index.js` (ESM)
+- `index.cjs` (CommonJS)
+- `index.d.ts` (types)
+
+## Development
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+## CI & Publishing
+
+CI checks:
+
+- install
+- lint
+- test
+- build
+
+Manual publish:
+
+```bash
+npm login
+npm publish --access public
+```
+
+Version bump flow:
+
+```bash
+npm version patch # or minor / major
+git push --follow-tags
+npm publish
+```
+
+## License
+
+MIT

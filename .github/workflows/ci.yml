@@ -6,46 +6,27 @@ on:
     branches: [ main ]
 
 jobs:
-  auto-fixes:
-    name: "Auto-Fixes (Pint & Rector)"
-    if: "!contains(github.event.head_commit.message, 'ci: auto-fixes')"
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run Prettier
-      run: npm run prettier
+      - name: Run lint
+        run: npm run lint
 
-    - name: Commit changes
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: 'ci: auto-fixes'
-        commit_options: '--no-verify'
+      - name: Run tests
+        run: npm run test
 
-  test:
-    needs: auto-fixes
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    # TODO: install dependencies and run tests
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run tests
-      run: npm test
+      - name: Run build
+        run: npm run build
