@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   create-tag:
@@ -15,6 +16,8 @@ jobs:
     if: >
       github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -25,3 +28,35 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         default_bump: "patch"
+
+  publish:
+    name: "Publish to npm"
+    needs: create-tag
+    if: needs.create-tag.outputs.new_tag != ''
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: main
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "24"
+        registry-url: "https://registry.npmjs.org"
+        cache: "npm"
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Sync package version to new tag
+      run: npm version "${NEW_TAG#v}" --no-git-tag-version --allow-same-version
+      env:
+        NEW_TAG: ${{ needs.create-tag.outputs.new_tag }}
+
+    - name: Verify package
+      run: npm run lint && npm run test && npm run build
+
+    - name: Publish package
+      run: npm publish --provenance --access public
