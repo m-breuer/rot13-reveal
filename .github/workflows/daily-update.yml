@@ -1,0 +1,39 @@
+name: Daily Dependency Update
+
+on:
+  schedule:
+  - cron: '0 3 * * *'
+  workflow_dispatch:
+
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+
+    - name: Install and update dependencies
+      run: |
+        npm install
+        npm update
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies'
+        title: 'Update Dependencies'
+        body: |
+          This PR updates the project dependencies.
+        branch: 'update-dependencies'
+        delete-branch: true
