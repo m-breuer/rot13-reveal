@@ -1,6 +1,6 @@
 {
   "name": "@m-breuer/rot13-reveal",
-  "version": "1.0.0",
+  "version": "0.0.4",
   "description": "Client-side ROT13 obfuscation and interaction-based reveal utility for imprint and GDPR pages.",
   "homepage": "https://github.com/m-breuer/rot13-reveal#readme",
   "bugs": {
