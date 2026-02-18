@@ -114,35 +114,6 @@ npm run test
 npm run build
 ```
 
-## CI & Publishing
-
-CI checks on pushes and pull requests:
-
-- install
-- lint
-- test
-- build
-
-Automatic publish on tag:
-
-```bash
-git tag v1.0.1
-git push origin v1.0.1
-```
-
-The GitHub workflow publishes the package to npm when a `v*` tag is pushed.
-
-Manual publish:
-
-```bash
-npm login
-npm publish
-```
-
-Required repository secret:
-
-- `NPM_TOKEN`: npm automation token with publish rights
-
 ## License
 
 MIT
