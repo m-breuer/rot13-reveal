@@ -42,8 +42,8 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "clean": "rimraf dist",
     "lint": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "node ./node_modules/vitest/vitest.mjs run",
+    "test:watch": "node ./node_modules/vitest/vitest.mjs",
     "prepack": "bun run clean && bun run lint && bun run test && bun run build"
   },
   "devDependencies": {
