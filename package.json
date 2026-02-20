@@ -1,6 +1,6 @@
 {
   "name": "@m-breuer/rot13-reveal",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Client-side ROT13 obfuscation and interaction-based reveal utility for imprint and GDPR pages.",
   "homepage": "https://github.com/m-breuer/rot13-reveal#readme",
   "bugs": {
@@ -18,8 +18,10 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.0.0",
+    "bun": ">=1.1.0"
   },
+  "packageManager": "bun@1.2.3",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -40,9 +42,9 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "clean": "rimraf dist",
     "lint": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "prepack": "npm run clean && npm run lint && npm run test && npm run build"
+    "test": "node ./node_modules/vitest/vitest.mjs run",
+    "test:watch": "node ./node_modules/vitest/vitest.mjs",
+    "prepack": "bun run clean && bun run lint && bun run test && bun run build"
   },
   "devDependencies": {
     "jsdom": "^28.0.0",
