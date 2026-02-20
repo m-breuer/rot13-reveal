@@ -17,13 +17,14 @@ Repository: [m-breuer/rot13-reveal](https://github.com/m-breuer/rot13-reveal)
 
 ## Requirements
 
-- Node.js >= 24 (build/test tooling)
+- Bun >= 1.1.0 (build/test/publish tooling)
+- Node.js >= 24 (compatibility target for tooling ecosystem)
 - Browser DOM APIs at runtime
 
 ## Install
 
 ```bash
-npm install @m-breuer/rot13-reveal
+bun add @m-breuer/rot13-reveal
 ```
 
 ## Quick Start
@@ -109,9 +110,10 @@ mountRot13Reveal(document.getElementById("contact")!, "you@example.com", {
 ## Development
 
 ```bash
-npm run lint
-npm run test
-npm run build
+bun install
+bun run lint
+bun run test
+bun run build
 ```
 
 ## License

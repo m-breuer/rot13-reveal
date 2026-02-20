@@ -18,8 +18,10 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.0.0",
+    "bun": ">=1.1.0"
   },
+  "packageManager": "bun@1.2.3",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -42,7 +44,7 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepack": "npm run clean && npm run lint && npm run test && npm run build"
+    "prepack": "bun run clean && bun run lint && bun run test && bun run build"
   },
   "devDependencies": {
     "jsdom": "^28.0.0",
